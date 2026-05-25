@@ -159,7 +159,7 @@ def scan_files(paths: list[Path], ignore_patterns: list[str]) -> list[FileResult
         if not p.is_file():
             continue
         if is_ignored(p, ignore_patterns):
-            print(f"[SKIP]   {p} (ignored)")
+            print(f"{cyan('[SKIP]')}   {p} (ignored)")
             continue
         result = FileResult(path=str(p))
         result.is_sensitive_name = check_filename(p)
@@ -174,6 +174,21 @@ def collect_paths(directory: Path, recursive: bool) -> list[Path]:
     return sorted(p for p in directory.iterdir() if p.is_file())
 
 # ---------------------------------------------------------------------------
+# Color helpers
+# ---------------------------------------------------------------------------
+
+_USE_COLOR = sys.stdout.isatty()
+
+def _c(code: str, text: str) -> str:
+    return f"\033[{code}m{text}\033[0m" if _USE_COLOR else text
+
+def green(t):  return _c("32", t)
+def yellow(t): return _c("33", t)
+def red(t):    return _c("31", t)
+def cyan(t):   return _c("36", t)
+def bold(t):   return _c("1",  t)
+
+# ---------------------------------------------------------------------------
 # Output
 # ---------------------------------------------------------------------------
 
@@ -181,18 +196,19 @@ def print_results(results: list[FileResult]) -> int:
     issues_found = 0
     for r in results:
         if not r.has_issues:
-            print(f"[OK]     {r.path}")
+            print(f"{green('[OK]')}     {r.path}")
             continue
 
         issues_found += 1
-        print(f"[WARN]   {r.path}")
+        print(f"{yellow('[WARN]')}   {r.path}")
         if r.is_sensitive_name:
-            print(f"           ! Sensitive filename detected")
+            print(f"           {red('! Sensitive filename detected')}")
         for f in r.findings:
-            print(f"           line {f.line_no}: [{f.kind}] {f.text}")
+            print(f"           line {f.line_no}: {yellow(f'[{f.kind}]')} {f.text}")
 
     total = len(results)
-    print(f"\n{total} file(s) checked — {issues_found} issue(s) found.")
+    summary_issues = red(str(issues_found)) if issues_found else green(str(issues_found))
+    print(f"\n{total} file(s) checked — {summary_issues} issue(s) found.")
     return issues_found
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,10 @@ exit_code=$?
 
 if [[ $exit_code -ne 0 ]]; then
     echo ""
-    echo "[pre-commit] Commit blocked: sensitive information detected."
+    echo -e "\033[31m[pre-commit] Commit blocked: sensitive information detected.\033[0m"
     echo "             Review the findings above, then re-stage and commit."
+    echo ""
+    echo "             To skip this check (use with caution):"
+    echo -e "               \033[33mgit commit -m 'your message' --no-verify\033[0m"
     exit 1
 fi
