@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# pre-commit hook — check staged files for sensitive information
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+CHECKER="$SCRIPT_DIR/check-sensitive/check-sensitive.py"
+
+if [[ ! -f "$CHECKER" ]]; then
+    echo "[pre-commit] check-sensitive.py not found at $CHECKER" >&2
+    exit 1
+fi
+
+# Collect staged files (added or modified, not deleted)
+mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ ${#staged[@]} -eq 0 ]]; then
+    exit 0
+fi
+
+echo "[pre-commit] Checking ${#staged[@]} staged file(s) for sensitive information..."
+echo ""
+
+python3 "$CHECKER" --files "${staged[@]}"
+exit_code=$?
+
+if [[ $exit_code -ne 0 ]]; then
+    echo ""
+    echo "[pre-commit] Commit blocked: sensitive information detected."
+    echo "             Review the findings above, then re-stage and commit."
+    exit 1
+fi
