@@ -19,9 +19,8 @@ from dataclasses import dataclass, field
 # ---------------------------------------------------------------------------
 
 SENSITIVE_PATTERNS = [
-    ("IPv4 address",          re.compile(r'\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b')),
+    ("IPv4 address",          re.compile(r'\b(?!(?:10|127)\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b')),
     ("IPv6 address",          re.compile(r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b')),
-    ("Private IPv4 address",  re.compile(r'\b(10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)\b')),
     ("Absolute Unix path",    re.compile(r'(?<!["\w])/(?:home|root|Users|var|etc|opt|tmp|srv|usr)/[\w./-]+')),
     ("Absolute Windows path", re.compile(r'[A-Za-z]:\\(?:Users|Windows|Program Files)[\\\w\s.-]+')),
     ("API key (generic)",     re.compile(r'(?i)(?:api[_-]?key|apikey|access[_-]?key)\s*[:=]\s*["\']?[\w\-]{16,}["\']?')),
