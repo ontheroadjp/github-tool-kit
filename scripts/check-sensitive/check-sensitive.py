@@ -25,11 +25,37 @@ SENSITIVE_PATTERNS = [
     ("Absolute Unix path",    re.compile(r'(?<!["\w])/(?:home|root|Users|var|etc|opt|tmp|srv|usr)/[\w./-]+')),
     ("Absolute Windows path", re.compile(r'[A-Za-z]:\\(?:Users|Windows|Program Files)[\\\w\s.-]+')),
     ("API key (generic)",     re.compile(r'(?i)(?:api[_-]?key|apikey|access[_-]?key)\s*[:=]\s*["\']?[\w\-]{16,}["\']?')),
-    ("Secret/token",          re.compile(r'(?i)(?:secret|token|password|passwd|pwd)\s*[:=]\s*["\']?[\w\-]{8,}["\']?')),
+    ("Secret/token",          re.compile(r'(?i)(?:secret|token|password|passwd|pwd)\s*[:=]\s*["\']?[\w\-]{16,}["\']?')),
     ("AWS access key",        re.compile(r'\bAKIA[0-9A-Z]{16}\b')),
     ("AWS secret key",        re.compile(r'(?i)aws[_-]?secret[_-]?access[_-]?key\s*[:=]\s*["\']?[\w/+]{40}["\']?')),
     ("Private key header",    re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')),
     ("GitHub token",          re.compile(r'\bghp_[0-9A-Za-z]{36}\b|\bghs_[0-9A-Za-z]{36}\b')),
+    ("JWT",                   re.compile(r'\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b')),
+    ("Bearer token",          re.compile(r'(?i)\bBearer\s+[\w\-._~+/]{20,}=*')),
+    # SaaS / cloud API keys
+    ("Google API key",        re.compile(r'\bAIza[0-9A-Za-z\-_]{35}\b')),
+    ("Slack token",           re.compile(r'\bxox[bpas]-[0-9A-Za-z\-]+')),
+    ("Stripe key",            re.compile(r'\b(?:sk|pk)_live_[0-9a-zA-Z]{24,}\b')),
+    ("SendGrid API key",      re.compile(r'\bSG\.[a-zA-Z0-9._\-]{66}\b')),
+    ("OpenAI API key",        re.compile(r'\bsk-[a-zA-Z0-9]{48}\b')),
+    ("Anthropic API key",     re.compile(r'\bsk-ant-[a-zA-Z0-9\-_]{90,}\b')),
+    ("npm token",             re.compile(r'\bnpm_[A-Za-z0-9]{36}\b')),
+    ("PyPI token",            re.compile(r'\bpypi-[A-Za-z0-9\-_]{50,}\b')),
+    ("DigitalOcean token",    re.compile(r'\bdop_v1_[a-f0-9]{64}\b')),
+    ("Twilio Account SID",    re.compile(r'\bAC[a-f0-9]{32}\b')),
+    ("Telegram Bot token",    re.compile(r'\b\d{8,10}:[A-Za-z0-9_\-]{35}\b')),
+    ("Discord Bot token",     re.compile(r'\b[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}\b')),
+    # Connection strings / URLs with embedded credentials
+    ("DB connection string",  re.compile(r'(?i)(?:postgres|mysql|mongodb(?:\+srv)?|redis|amqp)://[^:/@\s]+:[^@\s]+@')),
+    ("Basic auth URL",        re.compile(r'https?://[^/:@\s]+:[^/@\s]+@[^/\s]')),
+    ("Azure connection str",  re.compile(r'(?i)DefaultEndpointsProtocol=https;AccountName=\w+;AccountKey=')),
+    # Keys and certificates
+    ("GCP service account",   re.compile(r'"private_key"\s*:\s*"-----BEGIN PRIVATE KEY')),
+    ("Certificate",           re.compile(r'-----BEGIN CERTIFICATE-----')),
+    # PII
+    ("JP phone number",       re.compile(r'\b0\d{1,4}[-\s]\d{1,4}[-\s]\d{4}\b')),
+    ("My Number (JP)",        re.compile(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b')),
+    ("Credit card number",    re.compile(r'\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b')),
     ("Domain name",           re.compile(r'\b(?:[a-zA-Z0-9-]+\.){2,}(?:com|net|org|io|co|jp|dev|app|internal|local)\b')),
     ("Email address",         re.compile(r'\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b')),
 ]
@@ -88,6 +114,20 @@ class FileResult:
 # Core logic
 # ---------------------------------------------------------------------------
 
+NOSEC_MARKER = 'nosec'
+
+def load_ignore_patterns() -> list[str]:
+    ignore_file = Path(__file__).parent / '.check-sensitive-ignore'
+    if not ignore_file.is_file():
+        return []
+    lines = ignore_file.read_text(encoding='utf-8').splitlines()
+    return [l.strip() for l in lines if l.strip() and not l.startswith('#')]
+
+def is_ignored(path: Path, ignore_patterns: list[str]) -> bool:
+    import fnmatch
+    s = str(path)
+    return any(fnmatch.fnmatch(s, pat) or fnmatch.fnmatch(path.name, pat) for pat in ignore_patterns)
+
 def should_skip(path: Path) -> bool:
     return path.suffix.lower() in SKIP_EXTENSIONS
 
@@ -102,6 +142,10 @@ def check_content(path: Path) -> list[Finding]:
         return findings
 
     for lineno, line in enumerate(text.splitlines(), 1):
+        if lineno == 1 and line.startswith('#!'):
+            continue
+        if NOSEC_MARKER in line:
+            continue
         for kind, pattern in SENSITIVE_PATTERNS:
             if pattern.search(line):
                 snippet = line.strip()[:120]
@@ -109,10 +153,13 @@ def check_content(path: Path) -> list[Finding]:
                 break  # one finding per line is enough
     return findings
 
-def scan_files(paths: list[Path]) -> list[FileResult]:
+def scan_files(paths: list[Path], ignore_patterns: list[str]) -> list[FileResult]:
     results = []
     for p in paths:
         if not p.is_file():
+            continue
+        if is_ignored(p, ignore_patterns):
+            print(f"[SKIP]   {p} (ignored)")
             continue
         result = FileResult(path=str(p))
         result.is_sensitive_name = check_filename(p)
@@ -168,7 +215,8 @@ def main():
             sys.exit(2)
         paths = collect_paths(directory, args.recursive)
 
-    results = scan_files(paths)
+    ignore_patterns = load_ignore_patterns()
+    results = scan_files(paths, ignore_patterns)
     issues = print_results(results)
     sys.exit(1 if issues else 0)
 

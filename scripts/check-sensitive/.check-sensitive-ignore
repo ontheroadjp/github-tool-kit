@@ -1,0 +1,6 @@
+# Paths excluded from check-sensitive scanning.
+# Supports glob patterns (fnmatch). One pattern per line.
+# Lines starting with # are comments.
+
+# The scanner itself contains pattern strings as literals
+scripts/check-sensitive/check-sensitive.py
