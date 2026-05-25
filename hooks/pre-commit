@@ -11,7 +11,10 @@ if [[ ! -f "$CHECKER" ]]; then
 fi
 
 # Collect staged files (added or modified, not deleted)
-mapfile -t staged < <(git diff --cached --name-only --diff-filter=ACM)
+staged=()
+while IFS= read -r file; do
+    staged+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACM)
 
 if [[ ${#staged[@]} -eq 0 ]]; then
     exit 0
