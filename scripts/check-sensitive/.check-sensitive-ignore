@@ -4,3 +4,6 @@
 
 # The scanner itself contains pattern strings as literals
 scripts/check-sensitive/check-sensitive.py
+
+# Example/template files contain intentional placeholder values, not real secrets
+*.example
