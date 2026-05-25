@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function _show_reminder() {
+  cat <<-EOS
+    --------------------------------------------------
+
+    [REMIND] Before master branch pushing, check issues below!
+    - change version number
+    - code cleaning
+
+    --------------------------------------------------
+EOS
+    return 0
+}
+
+remind_msg=$( _show_reminder )
+printf '\033[1;36m%s\033[m\n' "$remind_msg"
