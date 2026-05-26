@@ -135,6 +135,13 @@ def is_ignored(path: Path, ignore_patterns: list[str]) -> bool:
 def is_whitelisted(matched_text: str, whitelist: list[str]) -> bool:
     return any(entry in matched_text for entry in whitelist)
 
+# SVG path command letter optionally followed by whitespace/commas at end of prefix
+_SVG_COORD_PREFIX = re.compile(r'[MLHVCSQTAZmlhvcsqtaz][\s,]*$')
+
+def _in_svg_coord_context(line: str, m) -> bool:
+    """Return True if the match follows an SVG path command (likely a coordinate, not a real IP)."""
+    return bool(_SVG_COORD_PREFIX.search(line[:m.start()]))
+
 def should_skip(path: Path) -> bool:
     return path.suffix.lower() in SKIP_EXTENSIONS
 
@@ -154,7 +161,8 @@ def check_content(path: Path, whitelist: list[str]) -> list[Finding]:
         snippet = line.strip()[:120]
         for kind, pattern in SENSITIVE_PATTERNS:
             matches = [m.group() for m in pattern.finditer(line)
-                       if not is_whitelisted(m.group(), whitelist)]
+                       if not is_whitelisted(m.group(), whitelist)
+                       and not (kind == "IPv4 address" and _in_svg_coord_context(line, m))]
             if matches:
                 findings.append(Finding(lineno, kind, snippet))
                 break
