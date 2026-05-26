@@ -113,8 +113,6 @@ class FileResult:
 # Core logic
 # ---------------------------------------------------------------------------
 
-NOSEC_MARKER = 'nosec'
-
 def load_ignore_patterns() -> list[str]:
     ignore_file = Path(__file__).parent / '.check-sensitive-ignore'
     if not ignore_file.is_file():
@@ -142,8 +140,6 @@ def check_content(path: Path) -> list[Finding]:
 
     for lineno, line in enumerate(text.splitlines(), 1):
         if lineno == 1 and line.startswith('#!'):
-            continue
-        if NOSEC_MARKER in line:
             continue
         for kind, pattern in SENSITIVE_PATTERNS:
             if pattern.search(line):

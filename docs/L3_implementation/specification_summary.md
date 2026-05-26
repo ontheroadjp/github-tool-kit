@@ -30,7 +30,7 @@ python3 check-sensitive.py --files file1 [file2 ...]
 | SaaS/クラウドキー | Google, Slack, Stripe, SendGrid, OpenAI, Anthropic, npm, PyPI, DigitalOcean, Twilio, Telegram, Discord |
 | 接続文字列 | DB URL（postgres/mysql/mongodb/redis/amqp）, Basic auth URL, Azure |
 | GCP | サービスアカウント秘密鍵 |
-| センシティブパス | `/home/`, `/etc/`, `C:\Users\` 等の絶対パス | # nosec
+| センシティブパス | `/home/`, `/etc/`, Windows 絶対パス 等 |
 | PII | メールアドレス, ドメイン名, JP 電話番号, マイナンバー, クレジットカード番号 |
 
 根拠: `check-sensitive.py:21-60`
@@ -46,7 +46,6 @@ python3 check-sensitive.py --files file1 [file2 ...]
 1. `.check-sensitive-ignore` パターンにマッチするファイル（`check-sensitive.py:125-128`）
 2. `SKIP_EXTENSIONS` に含まれるバイナリ系拡張子（`check-sensitive.py:82-90`）
 3. シェバング行（`#!` で始まる 1 行目, `check-sensitive.py:144-145`）
-4. `# nosec` マーカーを含む行（`check-sensitive.py:146-147`）
 
 ### 出力形式
 

@@ -9,7 +9,6 @@
 ## セキュリティ方針
 
 - **誤検知対策**: `.check-sensitive-ignore` ファイルでファイル単位のスキップパターンを管理（`scripts/check-sensitive/.check-sensitive-ignore`）
-- **行単位抑制**: `# nosec` コメントで特定行をスキャン対象外にできる（`scripts/check-sensitive/check-sensitive.py:116`）
 - **例外ファイル排除**: `*.example` ファイルはデフォルトで除外（プレースホルダ値を含む意図的なファイルのため）
 - **プライベート IP 除外**: `10.x`, `172.16-31.x`, `192.168.x` は検出対象外（`check-sensitive.py:22`）
 

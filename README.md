@@ -44,7 +44,7 @@ git config --global --unset core.hooksPath
 - **Single source of truth**: All hooks, scripts, and detection rules live in this repository. Rule changes go through code review.
 - **Global-first deployment**: Hooks are applied machine-wide via `core.hooksPath`, not per-repository.
 - **Standalone usability**: Scripts run independently of the hook infrastructure for manual scans.
-- **Opt-out over opt-in**: Use `.check-sensitive-ignore` or `# nosec` to suppress false positives rather than weakening the default ruleset.
+- **Opt-out over opt-in**: Use `.check-sensitive-ignore` to suppress false positives rather than weakening the default ruleset.
 
 ## Requirements
 
