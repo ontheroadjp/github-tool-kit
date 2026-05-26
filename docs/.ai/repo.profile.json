@@ -1,0 +1,22 @@
+{
+  "repo_id": "ontheroadjp/github-tool-kit",
+  "package_manager": "unknown",
+  "doc_roots": [
+    "docs/L0_concept",
+    "docs/L1_project",
+    "docs/L2_development",
+    "docs/L3_implementation"
+  ],
+  "commands": {
+    "scan_standalone": "python3 scripts/check-sensitive/check-sensitive.py",
+    "scan_recursive": "python3 scripts/check-sensitive/check-sensitive.py -r [directory]",
+    "scan_files": "python3 scripts/check-sensitive/check-sensitive.py --files [file...]",
+    "install_global_hooks": "git config --global core.hooksPath /path/to/github-tool-kit/hooks",
+    "verify_hooks": "git config --global core.hooksPath",
+    "uninstall_global_hooks": "git config --global --unset core.hooksPath"
+  },
+  "primary_docs": {
+    "investigation": "docs/L3_implementation/specification_summary.md",
+    "structure": "docs/L1_project/repository_structure.md"
+  }
+}
