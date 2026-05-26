@@ -120,10 +120,20 @@ def load_ignore_patterns() -> list[str]:
     lines = ignore_file.read_text(encoding='utf-8').splitlines()
     return [l.strip() for l in lines if l.strip() and not l.startswith('#')]
 
+def load_whitelist_patterns() -> list[str]:
+    whitelist_file = Path(__file__).parent / '.check-sensitive-whitelist'
+    if not whitelist_file.is_file():
+        return []
+    lines = whitelist_file.read_text(encoding='utf-8').splitlines()
+    return [l.strip() for l in lines if l.strip() and not l.startswith('#')]
+
 def is_ignored(path: Path, ignore_patterns: list[str]) -> bool:
     import fnmatch
     s = str(path)
     return any(fnmatch.fnmatch(s, pat) or fnmatch.fnmatch(path.name, pat) for pat in ignore_patterns)
+
+def is_whitelisted(matched_text: str, whitelist: list[str]) -> bool:
+    return any(entry in matched_text for entry in whitelist)
 
 def should_skip(path: Path) -> bool:
     return path.suffix.lower() in SKIP_EXTENSIONS
@@ -131,7 +141,7 @@ def should_skip(path: Path) -> bool:
 def check_filename(path: Path) -> bool:
     return bool(SENSITIVE_FILENAMES.search(str(path)))
 
-def check_content(path: Path) -> list[Finding]:
+def check_content(path: Path, whitelist: list[str]) -> list[Finding]:
     findings = []
     try:
         text = path.read_text(encoding='utf-8', errors='replace')
@@ -141,14 +151,16 @@ def check_content(path: Path) -> list[Finding]:
     for lineno, line in enumerate(text.splitlines(), 1):
         if lineno == 1 and line.startswith('#!'):
             continue
+        snippet = line.strip()[:120]
         for kind, pattern in SENSITIVE_PATTERNS:
-            if pattern.search(line):
-                snippet = line.strip()[:120]
+            matches = [m.group() for m in pattern.finditer(line)
+                       if not is_whitelisted(m.group(), whitelist)]
+            if matches:
                 findings.append(Finding(lineno, kind, snippet))
-                break  # one finding per line is enough
+                break
     return findings
 
-def scan_files(paths: list[Path], ignore_patterns: list[str]) -> list[FileResult]:
+def scan_files(paths: list[Path], ignore_patterns: list[str], whitelist: list[str]) -> list[FileResult]:
     results = []
     for p in paths:
         if not p.is_file():
@@ -159,7 +171,7 @@ def scan_files(paths: list[Path], ignore_patterns: list[str]) -> list[FileResult
         result = FileResult(path=str(p))
         result.is_sensitive_name = check_filename(p)
         if not should_skip(p):
-            result.findings = check_content(p)
+            result.findings = check_content(p, whitelist)
         results.append(result)
     return results
 
@@ -227,7 +239,8 @@ def main():
         paths = collect_paths(directory, args.recursive)
 
     ignore_patterns = load_ignore_patterns()
-    results = scan_files(paths, ignore_patterns)
+    whitelist = load_whitelist_patterns()
+    results = scan_files(paths, ignore_patterns, whitelist)
     issues = print_results(results)
     sys.exit(1 if issues else 0)
 

@@ -1,0 +1,9 @@
+# Strings whitelisted from check-sensitive detection.
+# If a pattern match's captured text contains any entry here, that match is suppressed.
+# Other matches on the same line are evaluated independently.
+# One entry per line. Lines starting with # are comments.
+
+# Placeholder domains safe to use in docs and test fixtures
+example.com
+example.org
+example.net
