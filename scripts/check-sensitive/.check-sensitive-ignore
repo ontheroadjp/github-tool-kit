@@ -1,9 +1,6 @@
-# Paths excluded from check-sensitive scanning.
-# Supports glob patterns (fnmatch). One pattern per line.
-# Lines starting with # are comments.
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# The scanner itself contains pattern strings as literals
-scripts/check-sensitive/check-sensitive.py
-
-# Example/template files contain intentional placeholder values, not real secrets
+# Example/template files contain placeholder values, not real secrets
 *.example

@@ -9,3 +9,7 @@ example.org
 example.net
 
 127.0.0.1
+
+# Turso placeholder values used in .env.local.example
+libsql://your-db.turso.io
+your-turso-auth-token
