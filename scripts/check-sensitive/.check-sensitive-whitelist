@@ -3,6 +3,19 @@
 # Other matches on the same line are evaluated independently.
 # One entry per line. Lines starting with # are comments.
 
+SHOW_FULL_PATH_AT_LA
+
+# for macos
+/etc/zshrc_Apple_Terminal
+/usr/sbin/notifyd
+
+# for github
+git@github.com
+raw.githubusercontent.com
+
+# for python
+/usr/local/var/pyenv/shims
+
 # Placeholder domains safe to use in docs and test fixtures
 example.com
 example.org
@@ -13,3 +26,4 @@ example.net
 # Turso placeholder values used in .env.local.example
 libsql://your-db.turso.io
 your-turso-auth-token
+

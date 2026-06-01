@@ -4,3 +4,4 @@ pnpm-lock.yaml
 
 # Example/template files contain placeholder values, not real secrets
 *.example
+
