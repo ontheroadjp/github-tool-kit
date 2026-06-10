@@ -46,7 +46,7 @@ python3 check-sensitive.py --files file1 [file2 ...]
 1. `.check-sensitive-ignore` パターンにマッチするファイル（`check-sensitive.py:125-128`）
 2. `SKIP_EXTENSIONS` に含まれるバイナリ系拡張子（`check-sensitive.py:82-90`）
 3. シェバング行（`#!` で始まる 1 行目, `check-sensitive.py:144-145`）
-4. `.check-sensitive-whitelist` に記載された文字列を含むマッチ（マッチ単位で抑制、`check-sensitive.py:138-139`）
+4. `.check-sensitive-whitelist` に記載された文字列を含むマッチ（マッチを含む行全体に対して部分一致で照合して抑制、エントリが長いほど絞り込み精度が上がる。例: `hoge.com` はそのドメインを含む全行を抑制、`hoge.com/foo/bar` はそのパスを含む行のみ抑制、`check-sensitive.py:135-136`）
 5. SVG パスコマンド（`M`/`L`/`C` 等）直後の IPv4 マッチ（座標の誤検知を防止、`check-sensitive.py:140`）
 
 ### 出力形式
