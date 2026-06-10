@@ -5,9 +5,24 @@
 
 SHOW_FULL_PATH_AT_LA
 
+# Placeholder
+libsql://your-db
+your-turso-auth-token
+
+# for repository
+docs/L1_project/
+docs/L3_implementation/
+
+# for dotfiles
+/home/zsh/.zshenv
+/home/vim
+
 # for macos
 /etc/zshrc_Apple_Terminal
 /usr/sbin/notifyd
+
+# tmp paths used by claude-code-kit hooks (documented in docs/)
+/tmp/claude-access-sessions/
 
 # for github
 git@github.com
@@ -22,8 +37,4 @@ example.org
 example.net
 
 127.0.0.1
-
-# Turso placeholder values used in .env.local.example
-libsql://your-db.turso.io
-your-turso-auth-token
 
