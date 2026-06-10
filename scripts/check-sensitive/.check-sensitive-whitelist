@@ -1,9 +1,13 @@
 # Strings whitelisted from check-sensitive detection.
-# If a pattern match's captured text contains any entry here, that match is suppressed.
+# If the LINE containing a pattern match includes any entry here, that match is suppressed.
+# This allows path-specific entries for precise control.
 # Other matches on the same line are evaluated independently.
 # One entry per line. Lines starting with # are comments.
 
 SHOW_FULL_PATH_AT_LA
+
+# slack
+hooks.slack.com/services/XXX/YYY/ZZZ
 
 # Placeholder
 libsql://your-db

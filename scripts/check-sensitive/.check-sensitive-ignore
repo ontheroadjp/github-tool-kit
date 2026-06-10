@@ -5,3 +5,6 @@ pnpm-lock.yaml
 # Example/template files contain placeholder values, not real secrets
 *.example
 
+# The scanner's own source contains sensitive-looking pattern strings as regex literals
+check-sensitive.py
+

@@ -132,8 +132,8 @@ def is_ignored(path: Path, ignore_patterns: list[str]) -> bool:
     s = str(path)
     return any(fnmatch.fnmatch(s, pat) or fnmatch.fnmatch(path.name, pat) for pat in ignore_patterns)
 
-def is_whitelisted(matched_text: str, whitelist: list[str]) -> bool:
-    return any(entry in matched_text for entry in whitelist)
+def is_whitelisted(matched_text: str, line: str, whitelist: list[str]) -> bool:
+    return any(entry in line for entry in whitelist)
 
 # SVG path command letter optionally followed by whitespace/commas at end of prefix
 _SVG_COORD_PREFIX = re.compile(r'[MLHVCSQTAZmlhvcsqtaz][\s,]*$')
@@ -161,7 +161,7 @@ def check_content(path: Path, whitelist: list[str]) -> list[Finding]:
         snippet = line.strip()[:120]
         for kind, pattern in SENSITIVE_PATTERNS:
             matches = [m.group() for m in pattern.finditer(line)
-                       if not is_whitelisted(m.group(), whitelist)
+                       if not is_whitelisted(m.group(), line, whitelist)
                        and not (kind == "IPv4 address" and _in_svg_coord_context(line, m))]
             if matches:
                 findings.append(Finding(lineno, kind, snippet))
